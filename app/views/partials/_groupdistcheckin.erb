@@ -1,0 +1,8 @@
+
+	<% @info.each do |value| %>
+		<% if value["event_attendee"] != nil %>
+			<% if value["event_attendee"]["attendee_fields"]["distribution_status"] == "GROUP_DISTRIBUTED" %>
+			 <%=value["event_attendee"]["attendee_fields"]["first_name"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["first_name"] %>,<%= value["event_attendee"]["attendee_fields"]["last_name"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["last_name"] %>,<%=value["scan_status"].nil? ? "N/A" : value["scan_status"].gsub("_"," ")%>,<%=value["updated_at"].nil? ? "N/A" : value["updated_at"].in_time_zone().strftime("%b-%d-%Y - %l:%M:%S %p %Z")%>,<%=value["event_attendee"]["attendee_fields"]["distribution_status"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["distribution_status"].gsub("_"," ")%>,<%=value["event_attendee"]["attendee_fields"]["distribution_status_date"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["distribution_status_date"].in_time_zone().strftime("%b-%d-%Y - %l:%M:%S %p %Z")%>,<%=value["event_attendee"]["attendee_fields"]["checkin_status"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["checkin_status"].gsub("_"," ")%>,<%=value["event_attendee"]["attendee_fields"]["checkin_status_date"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["checkin_status_date"].in_time_zone().strftime("%b-%d-%Y - %l:%M:%S %p %Z") %><br>
+			<% end %>
+		<% end %>
+	<% end %>

@@ -1,0 +1,18 @@
+<div class="container">
+	<%= hidden_field_tag "session", session[:scan_user].to_json %>
+		<div class="row">
+			<%= link_to 'Back', {:action => :delete_session}, :class => "back-button btn btn-danger col-xs-1" %>
+			<%= form_tag('/scan') do  %>
+			<!-- Change urls below for different event -->
+				<%= select_tag(:scan_action, options_for_select([
+					["Check-In Scan","{'url':'../#{session[:scan_user]["reader_id"]}/checkin_scans', 'option':'1'}"],
+					["Distribution Scan","{'url':'../#{session[:scan_user]["reader_id"]}/distribution_scans', 'option': '2'}"],
+					["Print Reconcile Scan","{'url':'../#{session[:scan_user]["reader_id"]}/print_scans','option':'3'}"],
+					["Security Scan","{'url':'../#{session[:scan_user]["reader_id"]}/scans', 'option': '4'}"],
+					# ["Dist. vs. Check-In","{'url':'../#{session[:scan_user]["reader_id"]}/scans', 'option': '5'}"],
+					# ["Group Dist. Only","{'url':'../#{session[:scan_user]["reader_id"]}/scans', 'option': '6'}"]
+					]), {class: "col-xs-6 offset-xs-1"}) %>
+				<%= submit_tag "Submit", class: "col-xs-2 btn btn-success"  %>
+			<% end %>
+		</div>
+</div>

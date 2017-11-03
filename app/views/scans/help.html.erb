@@ -1,0 +1,52 @@
+<div class="container">
+	<div class="row">
+		<%= link_to 'Back', :back, :class => "back-button btn btn-danger col-xs-1"  %>
+	</div>
+	<br><br>
+	<div class="row">
+		<ul class="col-xs-12">
+			<li><p class="open instruction" data-toggle="modal" data-target="#myModal">Pairing Instructions</p></li>
+			<li><p class="open off" data-toggle="modal" data-target="#myModal">Power Off</p></li>
+			<li><p class="open reset" data-toggle="modal" data-target="#myModal">Factory Reset</p></li>
+			<li><p class="open enter" data-toggle="modal" data-target="#myModal">Add 'Enter' Suffix</p></li>
+			<li><p class="open remove" data-toggle="modal" data-target="#myModal">Remove Suffix</p></li>
+			<li><p class="open dim" data-toggle="modal" data-target="#myModal">Dim Light</p></li>
+		</ul>
+	</div>
+<!-- Modal -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" id="custom-size" role="document">
+	    <div class="modal-content">
+	      <div class="modal-body">
+					<%= image_tag('Instructions.png', class: "help_image inactive instruction-img") %>
+					<%= image_tag('Power_off.png', class: "help_image inactive off-img") %>
+					<%= image_tag('Factory_reset.png', class: "help_image inactive reset-img") %>
+					<%= image_tag('Add_enter.png', class: "help_image inactive enter-img") %>
+					<%= image_tag('Remove_suffix.png', class: "help_image inactive remove-img") %>
+					<%= image_tag('Dim_light.png', class: "help_image inactive dim-img") %>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+</div>
+<script>
+	$('#myModal').on('shown.bs.modal', function () {
+	});
+
+	$(".open").each(function(link){
+		$(this).click(function(){
+			$('.'+$(this).attr('class').split(" ")[1]+'-img').show().css('display','block');
+		});
+	});
+	$(".close-modal, .modal").click(function(){
+		setTimeout(function(){
+			$(".modal-body img").each(function(){
+				$(this).hide();
+			},1000);
+		});
+	});
+	$(".modal-backdrop, .modal-dialog").click(function(e){
+		e.preventDefault();
+		e.stopPropagation();
+	});
+</script>

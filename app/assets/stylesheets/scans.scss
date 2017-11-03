@@ -1,0 +1,191 @@
+// Place all the styles related to the Scans controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+@import "bootstrap";
+
+.brand{
+	background-color: #47494B;
+	height: 80px;
+	width: 100%;
+}
+.brand-logo{
+	height:100%;
+	margin-left:50px;
+}
+
+.checkbox{
+	display:none;
+	margin: 5px 0 0 15px;
+  transform: scale(2);
+  -ms-transform: scale(2);
+  -webkit-transform: scale(2);
+	width:initial;
+}
+
+.done-group-sign{
+	display:none;
+}
+
+@media screen and (orientation:portrait) { 
+	.back-button{
+		padding-left:0 !important;
+		padding-right:0 !important;
+	}
+	.signature{
+		width: 75.02px !important;
+	}
+	.signed{ 
+		padding-top:30px !important;
+	}
+	.signed br{
+		display:initial;
+	}
+	.row-centered {
+		text-align:center;
+	}
+	.col-centered {
+		display:inline-block;
+		float:none;
+		margin-right:-4px;
+		padding: 0;
+		text-align:left;
+		vertical-align:top;
+	}
+	.attendee{
+		background-color:white;
+		border:solid black 2px;
+		padding:7px;
+	}
+	.black-list{
+		background-color:grey;
+	}
+	.red-flag{
+		background-color:rgb(255, 0, 0);
+	}
+	.green-flag{
+		background-color:rgb(42, 255, 0);
+	}
+	.image{
+		border:solid black 1px;
+		width:80%;
+	}
+	#password, #auth_token, #reader_id, #scan_action, #prid, #search-bar{
+		height:39px;
+		margin-right: 10px;
+	}
+	#scan{
+		text-align:center;
+	}
+	.error{
+		color:red;
+		text-align:center;
+	}
+	#scan_count{
+		text-align:center;
+	}
+	#help{
+		margin-top:15%;
+	}
+	#help h5{
+		text-align:center;
+	}
+	.inactive{
+		display:none;
+		margin: auto;
+		width: 60%;
+	}
+	#custom-size{
+		max-width:900px;
+	}
+	.open{
+		font-size:30px;
+	}
+	.signature{
+		height: 100px;
+		padding-top: 37px;
+		width: 105.02px;
+	}
+	.sig-pad{
+		text-align:center;
+	}
+	canvas{
+		border: solid black 1px;
+	}
+}
+
+@media screen and (orientation:landscape) {
+	.signed br{
+		display:none;
+	}
+	.row-centered {
+		text-align:center;
+	}
+	.col-centered {
+		display:inline-block;
+		float:none;
+		margin-right:-4px;
+		padding: 0;
+		text-align:left;
+		vertical-align:top;
+	}
+	.attendee{
+		background-color:white;
+		border:solid black 2px;
+		padding:7px;
+	}
+	.black-list{
+		background-color:grey;
+	}
+	.red-flag{
+		background-color:rgb(255, 0, 0);
+	}
+	.green-flag{
+		background-color:rgb(42, 255, 0);
+	}
+	.image{
+		border:solid black 1px;
+		width:80%;
+	}
+	#password, #auth_token, #reader_id, #scan_action, #prid, #search-bar{
+		height:39px;
+		margin-right: 10px;
+	}
+	#scan{
+		text-align:center;
+	}
+	.error{
+		color:red;
+		text-align:center;
+	}
+	#scan_count{
+		text-align:center;
+	}
+	#help{
+		margin-top:15%;
+	}
+	#help h5{
+		text-align:center;
+	}
+	.inactive{
+		display:none;
+		margin: auto;
+		width: 60%;
+	}
+	#custom-size{
+		max-width:900px;
+	}
+	.open{
+		font-size:30px;
+	}
+	.signature{
+		height: 100px;
+		padding-top: 37px;
+		width: 105.02px;
+	}
+	.sig-pad{
+		text-align:center;
+	}
+	canvas{
+		border: solid black 1px;
+	}
+}

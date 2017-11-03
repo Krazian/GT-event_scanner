@@ -1,0 +1,115 @@
+		<div class="row" id="scan_count">
+			<p class="col-xs-4">Total Scans: <span id="number"><%=@total_scans%></span></p>
+			<p class="col-xs-4">Good Scans: <span id="good_number"><%=@good_scans%></span></p>
+			<p class="col-xs-4">Invalid Scans: <span id="invalid_number"><%=@invalid_scans%></span></p>
+		</div>
+		<br>
+		<div class="collection">
+			<% @info.each do |value| %>
+				<% if value["event_attendee_id"].nil? || value["status"] == "INVALID" || value["event_attendee"].nil? %>
+				<% else %>
+					<div class="row row-centered attendee" id="<%=value["event_attendee"]["attendee_fields"]["event_attendee_id"]%>">
+						<div class="border">
+							<div class="col-xs-4 col-centered">
+								<img class="image" src="<%=value["event_attendee"]["attendee_fields"]["user_avatar_url_medium"].nil? ? image_path('default.png') : value["event_attendee"]["attendee_fields"]["user_avatar_url_medium"]%>">
+							</div>
+							<div class="col-xs-7 col-centered">
+								<ul>
+									<li>Name: <%=value["event_attendee"]["attendee_fields"]["first_name"]%> <%=value["event_attendee"]["attendee_fields"]["last_name"]%></li>
+									<li>Status: <%=value["scan_status"].gsub("_"," ")%></li>
+									<li>Updated at: <%=value["updated_at"].nil? ? "N/A" : value["updated_at"].in_time_zone().strftime("%b %d, %Y,%l:%M:%S %p %Z")%></li>
+									<li>Print Status: <%=value["event_attendee"]["attendee_fields"]["print_status"].gsub("_"," ")%></li>
+									<li>Print Status Date: <%=value["event_attendee"]["attendee_fields"]["print_status_date"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["print_status_date"].in_time_zone().strftime("%b %d, %Y,%l:%M:%S %p %Z")%></li>
+									<li>Check-In Status: <%=value["event_attendee"]["attendee_fields"]["checkin_status"].gsub("_"," ")%></li>
+									<li>Check-In Status Date: <%=value["event_attendee"]["attendee_fields"]["checkin_status_date"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["checkin_status_date"].in_time_zone().strftime("%b %d, %Y,%l:%M:%S %p %Z") %></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<br>
+				<% end %>
+			<% end %>
+		</div>
+				<script type="text/javascript">
+		$("#scan").click(function(){
+		var settings = {
+			"async": true,
+			"crossDomain": true,
+			"url": JSON.parse($('#session').val()).scan_action,
+			"method": "POST",
+			"headers": {
+				"x-auth-token": JSON.parse($('#session').val()).auth_token,
+				"cache-control": "no-cache",
+				"postman-token": "e171a850-7176-6354-3652-2dca4b85f81a",
+				"content-type": "application/x-www-form-urlencoded"
+			},
+			"data": {
+				"data[prid]": $('#prid').val()
+			}
+		};
+		$.ajax(settings).done(function (response){
+			// console.log(response.data);
+			console.log(response.data.prid + " successfuly scanned!");
+			var updatedScan;
+			$("#number").html(response.counts.total);
+			var profileImage;
+			var signature;
+			if(response.data.event_attendee !== undefined){
+				if (response.data.event_attendee.attendee_fields.user_avatar_url_medium === null){
+					profileImage = 'http://scan.paperless.events/default.png';
+				} else {
+					profileImage = response.data.event_attendee.attendee_fields.user_avatar_url_medium;
+				}
+			}
+
+			//ALL GOOD SCANS
+			if (response.data.scan_status === "VALID" || response.data.scan_status === "PRINT_RECONCILED" || response.data.scan_status === "CHECKED_IN" || response.data.scan_status === "DISTRIBUTED"){
+				updatedScan = $('<div class="row row-centered attendee green-flag" id="'+response.data.event_attendee.attendee_fields.event_attendee_id+'"><div class="border"><div class="col-xs-4 col-centered"><img class="image" src="'+profileImage+'"></div><div class="col-xs-7 col-centered"><ul><li>Name: '+response.data.event_attendee.attendee_fields.first_name+' '+response.data.event_attendee.attendee_fields.last_name+'</li><li>Status: '+response.data.scan_status.replace("_"," ")+'</li><li>Updated at: '+formatDateTime(response.data.updated_at).replace("GMT","UTC")+'</li><li>Print Status: '+response.data.event_attendee.attendee_fields.print_status.replace("_"," ")+'</li><li>Print Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.print_status_date).replace("GMT","UTC")+'</li><li>Check-In Status: '+response.data.event_attendee.attendee_fields.checkin_status.replace("_"," ")+'</li><li>Check-In Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.checkin_status_date).replace("GMT","UTC")+'</li></ul></div></div></div><br>');
+				$(".collection").prepend(updatedScan);
+				updatedScan.animate({backgroundColor: "white"},2000,"linear");
+				if ($(".attendee").length > 100){
+					$(".attendee").last().remove();
+				}
+				$("#good_number").html(response.counts.valid);
+
+			//BLACK LISTED SCANS
+			} else if (response.data.scan_status === "BLACKLIST"){
+				updatedScan = $('<div class="row row-centered attendee black-list" id="'+response.data.event_attendee.attendee_fields.event_attendee_id+'"><div class="border"><div class="col-xs-4 col-centered"><img class="image" src="'+profileImage+'"></div><div class="col-xs-7 col-centered"><ul><li>Name: '+response.data.event_attendee.attendee_fields.first_name+' '+response.data.event_attendee.attendee_fields.last_name+'</li><li>Status: '+response.data.scan_status.replace("_"," ")+'</li><li>Updated at: '+formatDateTime(response.data.updated_at).replace("GMT","UTC")+'</li><li>Print Status: '+response.data.event_attendee.attendee_fields.print_status.replace("_"," ")+'</li><li>Print Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.print_status_date).replace("GMT","UTC")+'</li><li>Check-In Status: '+response.data.event_attendee.attendee_fields.checkin_status.replace("_"," ")+'</li><li>Check-In Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.checkin_status_date).replace("GMT","UTC")+'</li></ul></div></div></div><br>');
+				$(".collection").prepend(updatedScan);
+				updatedScan.animate({backgroundColor: "white"},2000,"linear");
+				if ($(".attendee").length > 100){
+					$(".attendee").last().remove();
+				}
+				$("#black_number").html(response.counts.blacklisted);
+
+			//SCANS WITHOUT GOOD PRID
+			} else if (response.data.scan_status === "INVALID - NO ATTENDEE" || response.data.scan_status === "INVALID"){
+				$("#invalid_number").html(response.counts.invalid);
+				$("body").animate({backgroundColor: "red"},300, function(){
+					$(this).animate({backgroundColor: "white"},300);
+				});
+				//IF THE PRID IS NOT CONNECTED TO EVENT ATTENDEE ID
+				if(response["data"]["event_attendee_id"] === null){
+				//IF ATTENDEE ID EXISTS BUT NOT ALLOWED IN
+				}	else {
+					updatedScan = $('<div class="row row-centered attendee red-flag" id="'+response.data.event_attendee.attendee_fields.event_attendee_id+'"><div class="border"><div class="col-xs-4 col-centered"><img class="image" src="'+profileImage+'"></div><div class="col-xs-7 col-centered"><ul><li>Name: '+response.data.event_attendee.attendee_fields.first_name+' '+response.data.event_attendee.attendee_fields.last_name+'</li><li>Status: '+response.data.scan_status.replace("_"," ")+'</li><li>Updated at: '+formatDateTime(response.data.updated_at).replace("GMT","UTC")+'</li><li>Print Status: '+response.data.event_attendee.attendee_fields.print_status.replace("_"," ")+'</li><li>Print Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.print_status_date).replace("GMT","UTC")+'</li><li>Check-In Status: '+response.data.event_attendee.attendee_fields.checkin_status.replace("_"," ")+'</li><li>Check-In Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.checkin_status_date).replace("GMT","UTC")+'</li></ul></div></div></div><br>');
+					$(".collection").prepend(updatedScan);
+					updatedScan.animate({backgroundColor: "white"},2000,"linear");
+			}
+			//ALL OTHER BAD SCANS STILL COUNTS AS VALID SCAN
+			} else {
+				updatedScan = $('<div class="row row-centered attendee red-flag" id="'+response.data.event_attendee.attendee_fields.event_attendee_id+'"><div class="border"><div class="col-xs-4 col-centered"><img class="image" src="'+profileImage+'"></div><div class="col-xs-7 col-centered"><ul><li>Name: '+response.data.event_attendee.attendee_fields.first_name+' '+response.data.event_attendee.attendee_fields.last_name+'</li><li>Status: '+response.data.scan_status.replace("_"," ")+'</li><li>Updated at: '+formatDateTime(response.data.updated_at).replace("GMT","UTC")+'</li><li>Print Status: '+response.data.event_attendee.attendee_fields.print_status.replace("_"," ")+'</li><li>Print Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.print_status_date).replace("GMT","UTC")+'</li><li>Check-In Status: '+response.data.event_attendee.attendee_fields.checkin_status.replace("_"," ")+'</li><li>Check-In Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.checkin_status_date).replace("GMT","UTC")+'</li></ul></div></div></div><br>');
+				$(".collection").prepend(updatedScan);
+				updatedScan.animate({backgroundColor: "white"},2000,"linear");
+				if ($(".attendee").length > 100){
+					$(".attendee").last().remove();
+				}
+				$("#good_number").html(response.counts.valid);
+			}
+		});
+
+		//clear field and prime to accept next scan
+		$("#prid").val("");
+		$("#prid").focus();
+	});
+		</script>

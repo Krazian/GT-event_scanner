@@ -1,0 +1,314 @@
+		<div class="row" id="scan_count">
+			<p class="col-xs-4">Total Scans: <span id="number"><%=@total_scans%></span></p>
+			<p class="col-xs-4">Good Scans: <span id="good_number"><%=@good_scans%></span></p>
+			<p class="col-xs-4">Invalid Scans: <span id="invalid_number"><%=@invalid_scans%></span></p>
+		</div>
+		<br>
+		<%= hidden_field_tag "scan_eid" %>
+		<div class="row">
+			<div class="btn btn-warning col-xs-2 group-sign">GROUP</div>
+			<div class="btn btn-warning col-xs-2 done-group-sign" data-toggle="modal" data-target="#signModal" >DONE</div>
+		</div>
+		<br>
+		<div class="collection">
+			<% @info.each do |value| %>
+				<% if value["event_attendee_id"].nil? || value["status"] == "INVALID" || value["event_attendee"].nil? %>
+				<% else %>
+					<div class="row row-centered attendee" id="<%=value["event_attendee"]["attendee_fields"]["event_attendee_id"]%>">
+						<input type="checkbox" class="checkbox col-xs-1" name="eid-checkbox" value="<%=value["event_attendee"]["attendee_fields"]["event_attendee_id"]%>"/>
+						<div class="border">
+							<div class="col-xs-3 col-centered">
+								<img class="image" src="<%=value["event_attendee"]["attendee_fields"]["user_avatar_url_medium"].nil? ? image_path('default.png') : value["event_attendee"]["attendee_fields"]["user_avatar_url_medium"]%>">
+							</div>
+							<div class="col-xs-6 col-centered">
+								<ul>
+									<li>Name: <%=value["event_attendee"]["attendee_fields"]["first_name"]%> <%=value["event_attendee"]["attendee_fields"]["last_name"]%></li>
+									<li>Status: <%=value["scan_status"].gsub("_"," ")%></li>
+									<li>Updated at: <%=value["updated_at"].nil? ? "N/A" : value["updated_at"].in_time_zone().strftime("%b %d, %Y,%l:%M:%S %p %Z")%></li>
+									<li>Print Status: <%=value["event_attendee"]["attendee_fields"]["print_status"].gsub("_"," ")%></li>
+									<li>Print Status Date: <%=value["event_attendee"]["attendee_fields"]["print_status_date"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["print_status_date"].in_time_zone().strftime("%b %d, %Y,%l:%M:%S %p %Z")%></li>
+									<li>Check-In Status: <%=value["event_attendee"]["attendee_fields"]["checkin_status"].gsub("_"," ")%></li>
+									<li>Check-In Status Date: <%=value["event_attendee"]["attendee_fields"]["checkin_status_date"].nil? ? "N/A" : value["event_attendee"]["attendee_fields"]["checkin_status_date"].in_time_zone().strftime("%b %d, %Y,%l:%M:%S %p %Z") %></li>
+								</ul>
+							</div>
+              <div class="col-xs-1 col-centered">
+              <!-- CAT - Adding in logic to link to signature if it isnt null -->
+                <div 
+                  id="signModalButton__<%=value["event_attendee"]["attendee_fields"]["event_attendee_id"]%>" 
+                  class="signature btn btn-info" 
+                  style="<%=value["event_attendee"]["attendee_fields"]["distribution_status_signature"].nil? ? "" : "display:none;" %>" 
+                  data-toggle="modal" 
+                  data-target="#signModal" 
+                  data-eid="<%=value["event_attendee"]["attendee_fields"]["event_attendee_id"]%>">SIGN</div>
+             
+                <div 
+                  id="viewSignatureLink__<%=value["event_attendee"]["attendee_fields"]["event_attendee_id"]%>" 
+                  style="<%=value["event_attendee"]["attendee_fields"]["distribution_status_signature"].nil? ? "display:none;" : "" %>" 
+                  target="_blank" 
+                  data-toggle="modal" 
+                  data-target="#signedModal" 
+                  class="signature btn btn-info signed" 
+                  href="<%=value["event_attendee"]["attendee_fields"]["distribution_status_signature"].nil? ? "" : value["event_attendee"]["attendee_fields"]["distribution_status_signature"] %>">VIEW<br> SIG</div>
+         
+              <!-- CAT end -->
+							</div>
+						</div>
+					</div>
+					<br>
+				<% end %>
+			<% end %>
+		</div>
+		<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+		  <div class="modal-dialog" id="custom-size" role="document">
+		    <div class="modal-content">
+		      <div class="modal-body">
+						<div id="signature-pad" class="m-signature-pad sig-pad">
+					    <div class="m-signature-pad--body">
+					      <canvas></canvas>
+					    </div>
+					    <div class="m-signature-pad--footer">
+					      <div class="description">Sign above</div>
+					      <button type="button" class="button clear" data-action="clear">Clear</button>
+					      <button type="button" class="button save" data-action="save">Save</button>
+					    </div>
+					  </div>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+		<div class="modal fade" id="signedModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+		  <div class="modal-dialog" id="custom-size" role="document">
+		    <div class="modal-content">
+		      <div class="modal-body sig-pad">
+						<img src="" class="scribble">
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+		<script type="text/javascript">
+			// STUFF FOR SIGNATURE MODAL
+
+
+			$('#signModal').on('shown.bs.modal', function(){
+				var wrapper = document.getElementById("signature-pad"),
+		    clearButton = wrapper.querySelector("[data-action=clear]"),
+		    saveButton = wrapper.querySelector("[data-action=save]"),
+		    canvas = wrapper.querySelector("canvas"),
+		    signaturePad;
+		    
+				signaturePad = new SignaturePad(canvas);
+				signaturePad.clear();
+
+				clearButton.addEventListener("click", function (event) {
+				    signaturePad.clear();
+				});
+
+				saveButton.addEventListener("click", function (event) {
+					signaturePad.off();
+					// IF EMPTY
+					// !!!!BUG!!!! WITHOUT SIGNATUREPAD.OFF() POST REQUEST GOES THROUGH SERVAL TIMES
+					// WITH SIGNATUREPAD.OFF() APP READS EMPTY SIGNATURE SEVERAL TIMES BEFORE POST REQUEST ONCE
+			    if (signaturePad.isEmpty()) {
+			        // alert("Please provide signature first.");
+			    } else {
+			    	// IF SIGNING FOR ONE PERSON
+						if ($("#scan_eid").val().split(",").length === 1 && $("#scan_eid").val().split(",")[0] !== ""){
+							var settings = {
+								"async": true,
+								"crossDomain": true,
+								"url": JSON.parse($('#session').val()).scan_action.replace('distribution_scans','distribution_sign'), // CAT- I made a new endpoint that you can change signature based of the event attendee id; its 'distribution_sign'
+								"method": "POST",
+								"headers": {
+									"x-auth-token": JSON.parse($('#session').val()).auth_token,
+									"cache-control": "no-cache",
+									"postman-token": "e171a850-7176-6354-3652-2dca4b85f81a",
+									"content-type": "application/x-www-form-urlencoded"
+								},
+								"data": {
+                  "data[eid]" : $("#scan_eid").val(),
+									"data[signature]": signaturePad.toDataURL()
+								}
+							};
+              
+              var signatureURL = signaturePad.toDataURL();
+
+							$.ajax(settings).done(function (response){
+                console.log(response);
+                if(response.status == '201') {
+                  var signModalBtn = '#signModalButton__'+$("#scan_eid").val();
+                  var signatureLink = '#viewSignatureLink__'+$("#scan_eid").val();
+                  $(signatureLink).attr("href", signatureURL);
+                  $(signatureLink).show();
+                  $(signModalBtn).hide();
+                } else {
+                  console.log('error saving signature');
+                }
+                $('#signModal').modal('hide');
+                $("#prid").focus();
+              });
+            // IF SIGNING FOR MULTIPLE PEOPLE
+				    } else if($("#scan_eid").val().split(",").length > 1){
+				    	$("#scan_eid").val().split(",").forEach(function(eid){
+				    		console.log(eid)
+				    		// POST EACH TO EACH EID
+								var settings = {
+									"async": true,
+									"crossDomain": true,
+									"url": JSON.parse($('#session').val()).scan_action.replace('distribution_scans','distribution_sign'), // CAT- I made a new endpoint that you can change signature based of the event attendee id; its 'distribution_sign'
+									"method": "POST",
+									"headers": {
+										"x-auth-token": JSON.parse($('#session').val()).auth_token,
+										"cache-control": "no-cache",
+										"postman-token": "e171a850-7176-6354-3652-2dca4b85f81a",
+										"content-type": "application/x-www-form-urlencoded"
+									},
+									"data": {
+	                  "data[eid]" : eid,
+										"data[signature]": signaturePad.toDataURL()
+									}
+								};
+	              
+	              var signatureURL = signaturePad.toDataURL();
+
+								$.ajax(settings).done(function (response){
+	                console.log(response);
+	                if(response.status == '201') {
+	                  var signModalBtn = '#signModalButton__'+eid;
+	                  var signatureLink = '#viewSignatureLink__'+eid;
+	                  $(signatureLink).attr("href", signatureURL);
+	                  $(signatureLink).show();
+	                  $(signModalBtn).hide();
+	                } else {
+	                  console.log('error saving signature');
+	                }
+	              });
+				    	});
+              $('#signModal').modal('hide');
+              $("#prid").focus();
+				    }
+				  }
+				});
+			});
+
+		// SETS ELEMENT WITH EID TO USE WHEN SAVING
+		$(document).on('click','.signature',function(){
+			$("#scan_eid").val($(this).attr("data-eid"));
+		});
+
+		// SHOWS SIGNATURE IMAGE
+		$(document).on('click',".signed",function(){
+			$(".scribble").attr("src",$(this).attr("href"));
+		});
+
+		// HANDLES THE SWITCHING BETWEEN GROUP SIGNATURE AND DONE
+		$(".group-sign").click(function(){
+			$(this).hide();
+			$(".checkbox").show();
+			$(".done-group-sign").show();
+		});
+
+		$(".done-group-sign").click(function(){
+			$(this).hide();
+			$(".checkbox").hide();
+			$(".group-sign").show();
+			var checkedEids = [];
+			
+			// ALL CHECKED PEOPLE MAKE POST REQUEST WITH SIGNATURE
+			$('.checkbox').each(function () {
+		    if (this.checked){
+					checkedEids.push($(this).attr("value"));
+					$(this).attr('checked', false);
+				}
+			});
+			$("#scan_eid").attr("value", checkedEids);
+		});
+
+		$("#scan").click(function(){
+			var settings = {
+				"async": true,
+				"crossDomain": true,
+				"url": JSON.parse($('#session').val()).scan_action,
+				"method": "POST",
+				"headers": {
+					"x-auth-token": JSON.parse($('#session').val()).auth_token,
+					"cache-control": "no-cache",
+					"postman-token": "e171a850-7176-6354-3652-2dca4b85f81a",
+					"content-type": "application/x-www-form-urlencoded"
+				},
+				"data": {
+					"data[prid]": $('#prid').val()
+				}
+			};
+
+			$.ajax(settings).done(function (response){
+				console.log(response.data.prid + " successfuly scanned!");
+				var updatedScan;
+				$("#number").html(response.counts.total);
+				var profileImage;
+				var signature;
+				if(response.data.event_attendee!==undefined){
+					if (response.data.event_attendee.attendee_fields.user_avatar_url_medium === null){
+						profileImage = 'http://scan.paperless.events/default.png';
+					} else {
+						profileImage = response.data.event_attendee.attendee_fields.user_avatar_url_medium;
+					}
+					if (response.data.event_attendee.attendee_fields.distribution_status_signature === null){
+						signature = '<div id="signModalButton__'+response.data.event_attendee.attendee_fields.event_attendee_id+'" class="signature btn btn-info" data-toggle="modal" data-target="#signModal" data-eid="'+response.data.event_attendee.attendee_fields.event_attendee_id+'">SIGN</div><div id="viewSignatureLink__'+response.data.event_attendee.attendee_fields.event_attendee_id+'" style="display:none; target="_blank" data-toggle="modal" data-target="#signedModal" class="signature btn btn-info signed" href="'+response.data.event_attendee.attendee_fields.distribution_status_signature+'">VIEW<br> SIG</div>';
+					} else {
+						signature = '<div id="viewSignatureLink__'+response.data.event_attendee.attendee_fields.event_attendee_id+'" target="_blank" data-toggle="modal" data-target="#signedModal" class="signature btn btn-info signed" href="'+response.data.event_attendee.attendee_fields.distribution_status_signature+'">VIEW<br> SIG</div><div id="signModalButton__'+response.data.event_attendee.attendee_fields.event_attendee_id+'" style="display:none;" class="signature btn btn-info" data-toggle="modal" data-target="#signModal" data-eid="'+response.data.event_attendee.attendee_fields.event_attendee_id+'">SIGN</div>';
+					}
+				}
+				//ALL GOOD SCANS
+				if (response.data.scan_status === "VALID" || response.data.scan_status === "PRINT_RECONCILED" || response.data.scan_status === "CHECKED_IN" || response.data.scan_status === "DISTRIBUTED"){
+					updatedScan = $('<div class="row row-centered attendee green-flag" id="'+response.data.event_attendee.attendee_fields.event_attendee_id+'"><div class="border"><div class="col-xs-4 col-centered"><img class="image" src="'+profileImage+'"></div><div class="col-xs-6 col-centered"><ul><li>Name: '+response.data.event_attendee.attendee_fields.first_name+' '+response.data.event_attendee.attendee_fields.last_name+'</li><li>Status: '+response.data.scan_status.replace("_"," ")+'</li><li>Updated at: '+formatDateTime(response.data.updated_at).replace("GMT","UTC")+'</li><li>Print Status: '+response.data.event_attendee.attendee_fields.print_status.replace("_"," ")+'</li><li>Print Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.print_status_date).replace("GMT","UTC")+'</li><li>Check-In Status: '+response.data.event_attendee.attendee_fields.checkin_status.replace("_"," ")+'</li><li>Check-In Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.checkin_status_date).replace("GMT","UTC")+'</li></ul></div><div class="col-xs-1 col-centered">'+signature+'</div></div></div><br>');
+					$(".collection").prepend(updatedScan);
+					updatedScan.animate({backgroundColor: "white"},2000,"linear");
+					if ($(".attendee").length > 100){
+						$(".attendee").last().remove();
+					}
+					$("#good_number").html(response.counts.valid);
+
+				//BLACK LISTED SCANS
+				} else if (response.data.scan_status === "BLACKLIST"){
+					updatedScan = $('<div class="row row-centered attendee black-list" id="'+response.data.event_attendee.attendee_fields.event_attendee_id+'"><div class="border"><div class="col-xs-4 col-centered"><img class="image" src="'+profileImage+'"></div><div class="col-xs-6 col-centered"><ul><li>Name: '+response.data.event_attendee.attendee_fields.first_name+' '+response.data.event_attendee.attendee_fields.last_name+'</li><li>Status: '+response.data.scan_status.replace("_"," ")+'</li><li>Updated at: '+formatDateTime(response.data.updated_at).replace("GMT","UTC")+'</li><li>Print Status: '+response.data.event_attendee.attendee_fields.print_status.replace("_"," ")+'</li><li>Print Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.print_status_date).replace("GMT","UTC")+'</li><li>Check-In Status: '+response.data.event_attendee.attendee_fields.checkin_status.replace("_"," ")+'</li><li>Check-In Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.checkin_status_date).replace("GMT","UTC")+'</li></ul></div><div class="col-xs-1 col-centered">'+signature+'</div></div></div><br>');
+					$(".collection").prepend(updatedScan);
+					updatedScan.animate({backgroundColor: "white"},2000,"linear");
+					if ($(".attendee").length > 100){
+						$(".attendee").last().remove();
+					}
+					$("#black_number").html(response.counts.blacklisted);
+
+				//SCANS WITHOUT GOOD PRID
+				} else if (response.data.scan_status === "INVALID - NO ATTENDEE" || response.data.scan_status === "INVALID"){
+					// alert("ERROR: "+response.errors[0]);
+					$("#invalid_number").html(response.counts.invalid);
+					$("body").animate({backgroundColor: "red"},1000, function(){
+						$(this).animate({backgroundColor: "white"},1000);
+					});
+					//IF THE PRID IS NOT CONNECTED TO EVENT ATTENDEE ID
+					if(response["data"]["event_attendee_id"] === null){
+					//IF ATTENDEE ID EXISTS BUT NOT ALLOWED IN
+					}	else {
+						updatedScan = $('<div class="row row-centered attendee red-flag" id="'+response.data.event_attendee.attendee_fields.event_attendee_id+'"><div class="border"><div class="col-xs-4 col-centered"><img class="image" src="'+profileImage+'"></div><div class="col-xs-6 col-centered"><ul><li>Name: '+response.data.event_attendee.attendee_fields.first_name+' '+response.data.event_attendee.attendee_fields.last_name+'</li><li>Status: '+response.data.scan_status.replace("_"," ")+'</li><li>Updated at: '+formatDateTime(response.data.updated_at).replace("GMT","UTC")+'</li><li>Print Status: '+response.data.event_attendee.attendee_fields.print_status.replace("_"," ")+'</li><li>Print Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.print_status_date).replace("GMT","UTC")+'</li><li>Check-In Status: '+response.data.event_attendee.attendee_fields.checkin_status.replace("_"," ")+'</li><li>Check-In Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.checkin_status_date).replace("GMT","UTC")+'</li></ul></div><div class="col-xs-1 col-centered">'+signature+'</div></div></div><br>');
+						$(".collection").prepend(updatedScan);
+						updatedScan.animate({backgroundColor: "white"},2000,"linear");
+				}
+				//ALL OTHER BAD SCANS STILL COUNTS AS VALID SCAN
+				} else {
+					updatedScan = $('<div class="row row-centered attendee red-flag" id="'+response.data.event_attendee.attendee_fields.event_attendee_id+'"><div class="border"><div class="col-xs-4 col-centered"><img class="image" src="'+profileImage+'"></div><div class="col-xs-6 col-centered"><ul><li>Name: '+response.data.event_attendee.attendee_fields.first_name+' '+response.data.event_attendee.attendee_fields.last_name+'</li><li>Status: '+response.data.scan_status.replace("_"," ")+'</li><li>Updated at: '+formatDateTime(response.data.updated_at).replace("GMT","UTC")+'</li><li>Print Status: '+response.data.event_attendee.attendee_fields.print_status.replace("_"," ")+'</li><li>Print Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.print_status_date).replace("GMT","UTC")+'</li><li>Check-In Status: '+response.data.event_attendee.attendee_fields.checkin_status.replace("_"," ")+'</li><li>Check-In Status Date: '+formatDateTime(response.data.event_attendee.attendee_fields.checkin_status_date).replace("GMT","UTC")+'</li></ul></div><div class="col-xs-1 col-centered">'+signature+'</div></div></div><br>');
+					$(".collection").prepend(updatedScan);
+					updatedScan.animate({backgroundColor: "white"},2000,"linear");
+					if ($(".attendee").length > 100){
+						$(".attendee").last().remove();
+					}
+					$("#good_number").html(response.counts.valid);
+				}
+			});
+
+
+			//clear field and prime to accept next scan
+			$("#prid").val("");
+			$("#prid").focus();
+		});
+		</script>

@@ -1,0 +1,10 @@
+<div class="container">
+	<%= hidden_field_tag "session", session[:scan_user].to_json %>
+	<div class="row">
+		<%= link_to 'Back', {:action => :delete_session}, :class => "back-button btn btn-danger col-xs-1" %>
+		<%= form_tag('/reader') do  %>
+		<%= text_field_tag 'auth_token', nil, class: "col-xs-6 offset-xs-1", placeholder: "Authentication Token", autocorrect: "off", autocapitalize: "none", autofocus: true  %>
+			<%= submit_tag "Submit", class: "col-xs-2 btn btn-success"  %>
+		<% end %>
+	</div>
+</div>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <!-- <link rel="apple-touch-icon" href="<%= image_path('favicon.png')%>"> -->
+
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= csrf_meta_tags %>
+</head>
+<body>
+	<div class="brand">
+		<a target="_blank" href="#">
+			<%= image_tag('logo_placeholder.png', class: "brand-logo",target: "_blank", href: "#") %>
+		</a>
+	</div>
+<br>
+<%= yield %>
+</body>
+</html>

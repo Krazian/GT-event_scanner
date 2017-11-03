@@ -1,0 +1,5 @@
+<% @response["data"].each do |thing| %>
+	<% thing.each do |key,val| %>
+		<p> <%=key%>: <%=val%></p>
+	<% end %>
+<% end %>

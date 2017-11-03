@@ -1,0 +1,25 @@
+<div class="container">
+	<%= hidden_field_tag "session", session[:scan_user].to_json %>
+	<div class="row">
+		<%= link_to 'Back', {:action => :delete_session}, :class => "back-button btn btn-danger col-xs-1" %>
+			<%= form_tag('/scan', remote: true) do  %>
+					<%= text_field_tag 'prid', nil, class: "col-xs-6 offset-xs-1", placeholder: "", autocorrect: "off", autocapitalize: "none", autofocus: true %>
+					<%= submit_tag "Submit", class: "btn btn-success col-xs-2", id: "scan"  %>
+			<% end %>
+		<br>
+	</div>
+	<br>
+	<% if @response.nil? %>
+		<p>No response</p>
+	<% else %>
+		<% if @option == "1"%>
+			<%= render "partials/checkin"%>
+		<% elsif @option == "2"%>
+			<%= render "partials/distribution"%>
+		<% elsif @option == "3"%>
+			<%= render "partials/printreconcile"%>
+		<% elsif @option == "4"%>
+			<%= render "partials/security"%>
+		<% end %>
+	<% end %>
+</div>

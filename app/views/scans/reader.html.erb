@@ -1,0 +1,14 @@
+<div class="container">
+	<%= hidden_field_tag "session", session[:scan_user].to_json %>
+		<div class="row">
+			<%= link_to 'Back', {:action => :delete_session}, :class => "back-button btn btn-danger col-xs-1" %>
+			<% reader_ids = [] %>
+			<% @readers["data"].each do |reader| %>
+				<%reader_ids.push([reader['name'],reader['id'].to_s])%>
+			<% end %>
+			<%= form_tag('/action') do  %>
+					<%= select_tag(:reader_id, options_for_select(reader_ids), class: "col-xs-6 offset-xs-1") %>
+				<%= submit_tag "Submit", class: "col-xs-2 btn btn-success" %>
+			<% end %>
+		</div>
+</div>
